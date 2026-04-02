@@ -7,36 +7,21 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background-color: #000; color: white; font-family: 'Inter', sans-serif; }
+        .hard-box { border: 2px solid #E50914; background: linear-gradient(180deg, #121212 0%, #000 100%); }
+        .video-container { box-shadow: 0 0 20px rgba(229, 9, 20, 0.2); border: 1px solid #222; position: relative; }
         
-        /* Caixa principal com borda neon */
-        .hard-box { 
-            border: 2px solid #E50914; 
-            background: linear-gradient(180deg, #121212 0%, #000 100%); 
-        }
-
-        /* Container do vídeo */
-        .video-container { 
-            box-shadow: 0 0 20px rgba(229, 9, 20, 0.2); 
-            border: 1px solid #222; 
-        }
-        
-        /* NOVO EFEITO SUPER GLOW DO BOTÃO */
         .btn-super-glow {
             position: relative;
             transition: all 0.3s ease;
-            /* Brilho constante e intenso */
             box-shadow: 0 0 30px rgba(229, 9, 20, 0.8), 0 0 60px rgba(229, 9, 20, 0.4);
-            overflow: hidden; /* Necessário para o efeito de luz passar */
+            overflow: hidden;
         }
 
-        /* Efeito de reflexo de luz passando (Shine) */
         .btn-super-glow::after {
             content: '';
             position: absolute;
-            top: -50%;
-            left: -150%;
-            width: 200%;
-            height: 200%;
+            top: -50%; left: -150%;
+            width: 200%; height: 200%;
             background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.5) 50%, rgba(255, 255, 255, 0) 100%);
             transform: rotate(30deg);
             animation: shine-light 3s infinite;
@@ -44,14 +29,33 @@
 
         @keyframes shine-light {
             0% { left: -150%; }
-            20% { left: 100%; } /* Passa rápido */
-            100% { left: 100%; } /* Pausa longa */
+            20% { left: 100%; }
+            100% { left: 100%; }
         }
 
         .btn-super-glow:hover {
             transform: scale(1.05);
             box-shadow: 0 0 50px rgba(229, 9, 20, 1), 0 0 80px rgba(229, 9, 20, 0.6);
             filter: brightness(1.2);
+        }
+
+        /* Botão de Ativar Áudio Flutuante */
+        #mute-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 10; cursor: pointer;
+        }
+        .unmute-btn {
+            background: #E50914; color: white; padding: 10px 20px;
+            border-radius: 50px; font-weight: bold; font-size: 14px;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
         }
     </style>
 </head>
@@ -72,20 +76,18 @@
         <h3 class="text-xl font-black mb-4 uppercase italic tracking-tighter text-white">VEJA COMO NO VÍDEO</h3>
         
         <div class="w-full video-container rounded-xl overflow-hidden aspect-video mb-8 bg-zinc-900">
-            <iframe 
-                class="w-full h-full"
-                src="https://www.youtube.com/embed/ID_DO_SEU_VIDEO?autoplay=1&controls=0&rel=0" 
-                frameborder="0" 
-                allow="autoplay; encrypted-media" 
-                allowfullscreen>
-            </iframe>
+            <div id="mute-overlay" onclick="unmuteVideo()">
+                <div class="unmute-btn">🔊 CLIQUE PARA ATIVAR O SOM</div>
+            </div>
+            
+            <div id="player"></div>
         </div>
 
-        <a href="LINK_CHECKOUT_45_REAIS" class="btn-super-glow block w-full bg-[#E50914] text-white font-black text-2xl py-5 rounded-xl uppercase italic tracking-tighter">
+        <a href="https://gameflix2.github.io/CHECKOUT-GAMEFLIX--PAY/" class="btn-super-glow block w-full bg-[#E50914] text-white font-black text-2xl py-5 rounded-xl uppercase italic tracking-tighter">
             SIM! QUERO COMBO ULTIMATE
         </a>
 
-        <a href="LINK_DA_ENTREGA_FINAL" class="block mt-6 text-zinc-600 text-[10px] uppercase font-bold hover:text-zinc-400 underline tracking-widest">
+        <a href="https://gameflix2.github.io/ESCOLHA-SEU-PACK/" class="block mt-6 text-zinc-600 text-[10px] uppercase font-bold hover:text-zinc-400 underline tracking-widest">
             Não, prefiro escolher outro !
         </a>
     </div>
@@ -94,8 +96,44 @@
         Processamento Seguro • Mercado Pago • Gameflix 2026
     </p>
 
+    <script src="https://www.youtube.com/iframe_api"></script>
     <script>
-        // Timer regressivo de 5 minutos
+        let player;
+        const videoID = 'ID_DO_SEU_VIDEO'; // COLOQUE O ID DO SEU VÍDEO AQUI
+
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('player', {
+                height: '100%',
+                width: '100%',
+                videoId: videoID,
+                playerVars: {
+                    'autoplay': 1,
+                    'controls': 0, // Remove botões
+                    'rel': 0,
+                    'showinfo': 0,
+                    'modestbranding': 1,
+                    'loop': 1,
+                    'mute': 1, // Precisa iniciar mudo para o autoplay funcionar
+                    'playlist': videoID
+                },
+                events: {
+                    'onReady': onPlayerReady
+                }
+            });
+        }
+
+        function onPlayerReady(event) {
+            event.target.playVideo();
+        }
+
+        function unmuteVideo() {
+            player.unMute();
+            player.seekTo(0); // Recomeça o vídeo
+            player.playVideo();
+            document.getElementById('mute-overlay').style.display = 'none';
+        }
+
+        // Timer
         let time = 300; 
         const display = document.getElementById('countdown');
         setInterval(() => {
@@ -105,6 +143,5 @@
             if (time > 0) time--;
         }, 1000);
     </script>
-
 </body>
 </html>
